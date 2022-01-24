@@ -1,5 +1,16 @@
 # Changelog for com.google.android.appbundle
 
+## [1.6.0] - 2021-11-15
+### New Features
+ - Updated bundletool-all.jar from 1.6.1 to 1.8.2
+### Bug Fixes
+ - Fixed issue #127: crash with IL2CPP and "Separate base APK asset" enabled
+ - Fixed issue #143: handle AssetBundle files that have file extensions
+ - Fixed issue #145: AAB upload to Play Console fails due to BundleConfig.pb file size
+ - Fixed issue when installing Android APIs using the plugin
+### Other
+ - Update minimum Target SDK version to 30
+
 ## [1.5.0] - 2021-06-14
 ### New Features
  - Added a new Bundletool method for building AABs (requires 2018.4+ and .NET 4+)

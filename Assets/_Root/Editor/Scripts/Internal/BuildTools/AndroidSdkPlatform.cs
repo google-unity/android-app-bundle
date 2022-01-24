@@ -28,8 +28,8 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
     {
         // The minimum Android target SDK version supported by Google Play is described here:
         // https://support.google.com/googleplay/android-developer/answer/113469#targetsdk
-        private const int MinimumVersion = 29;
-        private const int LatestVersion = 30;
+        private const int MinimumVersion = 30;
+        private const int LatestVersion = 31;
 
         private static readonly Regex PlatformVersionRegex = RegexHelper.CreateCompiled(@"^android-(\d+)$");
 
@@ -69,7 +69,8 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
                     // Note: this install can be slow, but it's not clear that it's any slower through Unity.
                     AndroidSdkPackageInstaller.InstallPackage(
                         string.Format("platforms;android-{0}", LatestVersion),
-                        string.Format("Android SDK Platform {0}", LatestVersion));
+                        string.Format("Android SDK Platform {0}", LatestVersion),
+                        _androidSdk.RootPath);
                 }
 
                 return false;

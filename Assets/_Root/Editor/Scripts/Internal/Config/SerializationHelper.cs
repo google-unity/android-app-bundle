@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Google.Android.AppBundle.Editor.Internal.Config
@@ -31,6 +32,7 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
             return (TextureCompressionFormat) Enum.Parse(typeof(TextureCompressionFormat), textureCompressionFormat);
         }
 
+
         /// <summary>
         /// Returns a deep copy of the specified <see cref="AssetPackConfig"/>.
         /// </summary>
@@ -38,7 +40,32 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
         /// <returns>A new copy of the original AssetPackConfig.</returns>
         public static AssetPackConfig DeepCopy(AssetPackConfig assetPackConfig)
         {
-            return Deserialize(Serialize(assetPackConfig));
+            // We copy the object's fields explicitly instead of calling Deserialize(Serialize(config)) because
+            // Deserialize performs checks and transformations that can produce an inexact copy.
+            // See https://github.com/google/play-unity-plugins/issues/143 for one such case.
+            var copy = new AssetPackConfig
+            {
+                SplitBaseModuleAssets = assetPackConfig.SplitBaseModuleAssets,
+                DefaultTextureCompressionFormat = assetPackConfig.DefaultTextureCompressionFormat,
+            };
+
+            foreach (var pair in assetPackConfig.AssetPacks)
+            {
+                var assetPack = pair.Value;
+                var assetPackCopy = new AssetPack
+                {
+                    DeliveryMode = assetPack.DeliveryMode,
+                    AssetBundleFilePath = assetPack.AssetBundleFilePath,
+                    AssetPackDirectoryPath = assetPack.AssetPackDirectoryPath,
+                    CompressionFormatToAssetBundleFilePath =
+                        CopyDictionary(assetPack.CompressionFormatToAssetBundleFilePath),
+                    CompressionFormatToAssetPackDirectoryPath =
+                        CopyDictionary(assetPack.CompressionFormatToAssetPackDirectoryPath),
+                };
+                copy.AssetPacks.Add(pair.Key, assetPackCopy);
+            }
+
+            return copy;
         }
 
         public static SerializableAssetPackConfig Serialize(AssetPackConfig assetPackConfig)
@@ -116,6 +143,11 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
             return config;
         }
 
+        /// <summary>
+        /// Creates an AssetPackConfig from the specified SerializableAssetPackConfig, validating its fields
+        /// in the process. Note: AssetBundle names are interpreted from the AssetBundle path rather than
+        /// the specified names.
+        /// </summary>
         public static AssetPackConfig Deserialize(SerializableAssetPackConfig config)
         {
             var assetPackConfig = new AssetPackConfig
@@ -142,13 +174,14 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
                 }
 
                 var dictionaryTextureCompression =
-                    assetBundles 
+                    assetBundles
                         .ToDictionary(item => item.TextureCompressionFormat, item => item.path);
                 if (dictionaryTextureCompression.Count != 0)
                 {
                     assetPackConfig.AddAssetBundles(dictionaryTextureCompression,
                         multiTargetingAssetBundle.DeliveryMode);
                 }
+
             }
 
             foreach (var pack in config.assetPacks)
@@ -166,9 +199,20 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
                     assetPackConfig.AddAssetsFolders(
                         pack.name, compressionFormatToAssetPackDirectoryPath, pack.DeliveryMode);
                 }
+
             }
 
             return assetPackConfig;
+        }
+
+        private static Dictionary<TKey, TValue> CopyDictionary<TKey, TValue>(Dictionary<TKey, TValue> dict)
+        {
+            if (dict == null)
+            {
+                return null;
+            }
+
+            return new Dictionary<TKey, TValue>(dict);
         }
     }
 }
