@@ -3,7 +3,7 @@
 ### Install by add directly in `manifest.json` in folder `Packages/manifest.json`
 
 
-for version `1.6.0`
+for version `1.7.0`
 ```csharp
-"com.google.android.appbundle": "https://github.com/google-unity/android-app-bundle.git#1.6.0",
+"com.google.android.appbundle": "https://github.com/google-unity/android-app-bundle.git#1.7.0",
 ```
