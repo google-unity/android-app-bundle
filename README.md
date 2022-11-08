@@ -2,8 +2,8 @@
 
 ### Install by add directly in `manifest.json` in folder `Packages/manifest.json`
 
-- for version 1.8.0
 
+for version `1.6.0`
 ```csharp
-"com.google.android.appbundle": "https://github.com/google-unity/android-app-bundle.git?path=Assets/_Root#1.8.0",
+"com.google.android.appbundle": "https://github.com/google-unity/android-app-bundle.git#1.6.0",
 ```
