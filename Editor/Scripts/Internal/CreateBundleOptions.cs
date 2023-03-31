@@ -32,5 +32,9 @@ namespace Google.Android.AppBundle.Editor.Internal
         /// </summary>
         public CompressionOptions CompressionOptions { get; set; }
 
+        /// <summary>
+        /// Options for building asset only bundles.
+        /// </summary>
+        public AssetOnlyOptions AssetOnlyOptions { get; set; }
     }
 }

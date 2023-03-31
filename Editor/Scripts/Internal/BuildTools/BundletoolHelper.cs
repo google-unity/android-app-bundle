@@ -44,6 +44,18 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
             /// </summary>
             public string defaultTcfSuffix;
 
+            /// <summary>
+            /// If true, enables targeting of module contents by device tiers.
+            /// </summary>
+            public bool enableDeviceTierTargeting;
+
+            /// <summary>
+            /// When targeting by device tier, specifies the default device tier that will be used to generate
+            /// standalone APKs for Android pre-Lollipop devices that don't support split APKs.
+            /// If not specified, it defaults to "0".
+            /// </summary>
+            public string defaultDeviceTier = "0";
+
 
             /// <summary>
             /// Whether or not this bundle contains an install-time asset pack.
@@ -60,6 +72,10 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
             /// </summary>
             public CompressionOptions compressionOptions;
 
+            /// <summary>
+            /// Options for configuring asset only app bundles.
+            /// </summary>
+            public AssetOnlyOptions assetOnlyOptions;
         }
 
         // Paths where the bundletool jar may potentially be found.
@@ -73,7 +89,7 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
         /// Similar to PlaybackEngines/AndroidPlayer/Tools/GradleTemplates/mainTemplate.gradle
         /// </summary>
         private static readonly string[] UnityUncompressedGlob =
-            {"assets/**/*.unity3d", "assets/**/*.ress", "assets/**/*.resource"};
+            { "assets/**/*.unity3d", "assets/**/*.ress", "assets/**/*.resource" };
 
         /// <summary>
         /// Make the Bundle Config exported as JSON cleaner by removing the suffix stripping fields
@@ -120,11 +136,12 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
 
             var dimensions = config.optimizations.splitsConfig.splitDimension;
             // Split on ABI so only one set of native libraries (armeabi-v7a, arm64-v8a, or x86) is sent to a device.
-            dimensions.Add(new BundletoolConfig.SplitDimension {value = BundletoolConfig.Abi, negate = false});
+            dimensions.Add(new BundletoolConfig.SplitDimension { value = BundletoolConfig.Abi, negate = false });
             // Do not split on LANGUAGE since Unity games don't store localized strings in the typical Android manner.
-            dimensions.Add(new BundletoolConfig.SplitDimension {value = BundletoolConfig.Language, negate = true});
+            dimensions.Add(new BundletoolConfig.SplitDimension { value = BundletoolConfig.Language, negate = true });
             // Do not split on SCREEN_DENSITY since Unity games don't have per-density resources other than app icons.
-            dimensions.Add(new BundletoolConfig.SplitDimension {value = BundletoolConfig.ScreenDensity, negate = true});
+            dimensions.Add(
+                new BundletoolConfig.SplitDimension { value = BundletoolConfig.ScreenDensity, negate = true });
             if (configParams.enableTcfTargeting)
             {
                 dimensions.Add(new BundletoolConfig.SplitDimension
@@ -139,23 +156,47 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
                 });
             }
 
+            if (configParams.enableDeviceTierTargeting)
+            {
+                dimensions.Add(new BundletoolConfig.SplitDimension
+                {
+                    value = BundletoolConfig.DeviceTier,
+                    negate = false,
+                    suffixStripping =
+                    {
+                        enabled = true,
+                        defaultSuffix = configParams.defaultDeviceTier
+                    }
+                });
+            }
 
+
+            if (configParams.assetOnlyOptions != null)
+            {
+                config.type = BundletoolConfig.AssetOnly;
+                config.asset_modules_config = new BundletoolConfig.AssetModulesConfig
+                {
+                    app_version = new List<long>(configParams.assetOnlyOptions.AppVersions),
+                    asset_version_tag = configParams.assetOnlyOptions.AssetVersionTag
+                };
+                return config;
+            }
 
             // Bundletool requires the below standaloneConfig when supporting install-time asset packs for pre-Lollipop.
             if (configParams.containsInstallTimeAssetPack &&
                 TextureTargetingTools.IsSdkVersionPreLollipop(configParams.minSdkVersion))
             {
                 config.optimizations.standaloneConfig.splitDimension.Add(new BundletoolConfig.SplitDimension
-                    {value = BundletoolConfig.Abi, negate = true});
+                    { value = BundletoolConfig.Abi, negate = true });
 
                 config.optimizations.standaloneConfig.splitDimension.Add(new BundletoolConfig.SplitDimension
-                    {value = BundletoolConfig.Language, negate = true});
+                    { value = BundletoolConfig.Language, negate = true });
 
                 config.optimizations.standaloneConfig.splitDimension.Add(new BundletoolConfig.SplitDimension
-                    {value = BundletoolConfig.ScreenDensity, negate = true});
+                    { value = BundletoolConfig.ScreenDensity, negate = true });
 
                 config.optimizations.standaloneConfig.splitDimension.Add(new BundletoolConfig.SplitDimension
-                    {value = BundletoolConfig.TextureCompressionFormat, negate = true});
+                    { value = BundletoolConfig.TextureCompressionFormat, negate = true });
 
                 config.optimizations.standaloneConfig.strip64BitLibraries = true;
             }
@@ -315,7 +356,7 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
             {
                 // GUIDToAssetPath throws an exception if called on a non-main thread. To catch this case early, we
                 // define this variable here, rather than below, where it is used.
-                var guidPath = AssetDatabase.GUIDToAssetPath("4c3bd2894171e437eb6d99ddad4a81ac");
+                var guidPath = AssetDatabase.GUIDToAssetPath("c52291e63505c4121a167e6f0121c1b1");
 
                 string relativePath = null;
 

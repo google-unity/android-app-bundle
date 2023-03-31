@@ -33,15 +33,20 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
         public const string Language = "LANGUAGE";
         public const string ScreenDensity = "SCREEN_DENSITY";
         public const string TextureCompressionFormat = "TEXTURE_COMPRESSION_FORMAT";
+        public const string DeviceTier = "DEVICE_TIER";
 
 
+        // Options for BundleType
+        public const string Regular = "REGULAR";
+        public const string AssetOnly = "ASSET_ONLY";
 
         [Serializable]
         public class Config
         {
             public Optimizations optimizations = new Optimizations();
             public Compression compression = new Compression();
-
+            public string type = Regular;
+            public AssetModulesConfig asset_modules_config = new AssetModulesConfig();
         }
 
         [Serializable]
@@ -100,5 +105,11 @@ namespace Google.Android.AppBundle.Editor.Internal.BuildTools
             public string defaultSuffix;
         }
 
+        [Serializable]
+        public class AssetModulesConfig
+        {
+            public List<long> app_version = new List<long>();
+            public string asset_version_tag;
+        }
     }
 }

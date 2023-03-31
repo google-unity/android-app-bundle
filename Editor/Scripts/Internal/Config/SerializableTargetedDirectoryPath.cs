@@ -20,12 +20,23 @@ namespace Google.Android.AppBundle.Editor.Internal.Config
     public class SerializableTargetedDirectoryPath
     {
         public string path;
+
         public string textureCompressionFormat = TextureCompressionFormat.Default.ToString();
+
+        public string deviceTier;
+
 
         public TextureCompressionFormat TextureCompressionFormat
         {
             get { return SerializationHelper.GetTextureCompressionFormat(textureCompressionFormat); }
             set { textureCompressionFormat = value.ToString(); }
         }
+
+        public DeviceTier DeviceTier
+        {
+            get { return SerializationHelper.GetDeviceTier(deviceTier); }
+            set { deviceTier = value != null ? value.ToString() : null; }
+        }
+
     }
 }
